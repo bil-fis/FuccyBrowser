@@ -23,6 +23,7 @@ from PyQt5.QtWebEngineWidgets import *
 #         view.load(url)
 #         index = self.addTab(view, " ...")
 
+tabsCount = -1
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -71,6 +72,13 @@ class Ui_MainWindow(object):
         self.menuFuccy.addAction(self.actionExit_2)
         self.menuBar.addAction(self.menuFuccy.menuAction())
 
+        self.menuCtrl = QtWidgets.QMenu(self.menuBar)
+        self.menuCtrl.setObjectName("menuCtrl")
+        self.actionReload = QtWidgets.QAction(MainWindow)
+        self.actionReload.setObjectName("actionReload")
+
+        self.menuBar.addAction(self.menuCtrl.menuAction())
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -84,6 +92,7 @@ class Ui_MainWindow(object):
         self.actionSettings.setText(_translate("MainWindow", "设置"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionExit_2.setText(_translate("MainWindow", "退出"))
+        # self.menuFuccy
 
 
 class NewQWebEngineView(QWebEngineView, Ui_MainWindow):
@@ -96,6 +105,7 @@ class NewQWebEngineView(QWebEngineView, Ui_MainWindow):
         return self
  
 class MyBrowser(QMainWindow, Ui_MainWindow):
+    global tabsCount
     def __init__(self):
         super(MyBrowser, self).__init__()
         self.setupUi(self)
@@ -111,6 +121,7 @@ class MyBrowser(QMainWindow, Ui_MainWindow):
         self.actionSettings.triggered.connect(self.openSettings)
 
     def new_tab(self, url):
+        global tabsCount
         # 为标签创建新网页
         browser = NewQWebEngineView()
         browser.setUrl(url)
@@ -120,6 +131,7 @@ class MyBrowser(QMainWindow, Ui_MainWindow):
  
         # 加载完成之后将标签标题修改为网页相关的标题
         browser.loadFinished.connect(lambda: self.set_tab_title(_index, browser))
+        tabsCount =tabsCount+1
  
     def set_tab_title(self, index, browser):
         self.tabWidget.setTabText(index, browser.page().title())
@@ -160,8 +172,11 @@ class MyBrowser(QMainWindow, Ui_MainWindow):
         self.new_tab(QUrl(turl))
 
     def onTabClose(self,index):
-        if index>0:
+        global tabsCount
+        print(tabsCount)
+        if tabsCount>0:
             self.tabWidget.removeTab(index)
+            tabsCount = tabsCount-1
         else:
             lastTabReply = QMessageBox.warning(self,'FuccyBrowser','关闭最后一个标签页程序会同时关闭，继续吗？', QMessageBox.Yes|QMessageBox.No,QMessageBox.No)
             if lastTabReply == QMessageBox.Yes:
@@ -182,5 +197,5 @@ if __name__ == '__main__':
     os.chdir(file_abs_path+"\\Fuccy_Data")
     app = QApplication(sys.argv)
     my_browser = MyBrowser()
-    my_browser.show()
+    my_browser.showMaximized()
     app.exec_()
